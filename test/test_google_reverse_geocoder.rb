@@ -33,9 +33,9 @@ class GoogleReverseGeocoderTest < BaseGeocoderTest #:nodoc: all
     
     @latlng = "51.4578329,7.0166848"
     
-    url = "http://maps.google.com/maps/geo?ll=#{Geokit::Inflector.url_escape(@latlng)}&output=xml&key=Google&oe=utf-8"
+    url = "http://maps.google.com/maps/geo?ll=#{Geokit::Inflector.url_escape(@latlng)}&output=xml&key=Google&oe=utf-8&hl=en"
     Geokit::Geocoders::GoogleGeocoder.expects(:call_geocoder_service).with(url).returns(response)
-    res=Geokit::Geocoders::GoogleGeocoder.reverse_geocode(@latlng) 
+    res=Geokit::Geocoders::GoogleGeocoder.reverse_geocode(@latlng, :language => 'en') 
     assert_equal "Nordrhein-Westfalen", res.state
     assert_equal "Essen", res.city 
     assert_equal "45127", res.zip
