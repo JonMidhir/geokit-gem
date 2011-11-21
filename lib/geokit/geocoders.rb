@@ -137,8 +137,8 @@ module Geokit
       # Main method which calls the do_reverse_geocode template method which subclasses
       # are responsible for implementing.  Returns a populated GeoLoc or an
       # empty one with a failed success code.
-      def self.reverse_geocode(latlng)
-        res = do_reverse_geocode(latlng)
+      def self.reverse_geocode(latlng, opts = {})
+        res = do_reverse_geocode(latlng, opts)
         return res.success? ? res : GeoLoc.new        
       end
       
@@ -153,7 +153,7 @@ module Geokit
       # Not all geocoders can do reverse geocoding. So, unless the subclass explicitly overrides this method,
       # a call to reverse_geocode will return an empty GeoLoc. If you happen to be using MultiGeocoder,
       # this will cause it to failover to the next geocoder, which will hopefully be one which supports reverse geocoding.
-      def self.do_reverse_geocode(latlng)
+      def self.do_reverse_geocode(latlng, opts = {})
         return GeoLoc.new
       end
 
@@ -399,9 +399,10 @@ module Geokit
       private 
       
       # Template method which does the reverse-geocode lookup.
-      def self.do_reverse_geocode(latlng) 
+      def self.do_reverse_geocode(latlng, opts = {}) 
         latlng=LatLng.normalize(latlng)
-        res = self.call_geocoder_service("http://maps.google.com/maps/geo?ll=#{Geokit::Inflector::url_escape(latlng.ll)}&output=xml&key=#{Geokit::Geocoders::google}&oe=utf-8")
+        opts[:language] ||= "en"
+        res = self.call_geocoder_service("http://maps.google.com/maps/geo?ll=#{Geokit::Inflector::url_escape(latlng.ll)}&output=xml&key=#{Geokit::Geocoders::google}&oe=utf-8&hl=#{opts[:language]}")
         #        res = Net::HTTP.get_response(URI.parse("http://maps.google.com/maps/geo?ll=#{Geokit::Inflector::url_escape(address_str)}&output=xml&key=#{Geokit::Geocoders::google}&oe=utf-8"))
         return GeoLoc.new unless (res.is_a?(Net::HTTPSuccess) || res.is_a?(Net::HTTPOK))
         xml = res.body
@@ -531,9 +532,10 @@ module Geokit
 
       private 
       # Template method which does the reverse-geocode lookup.
-      def self.do_reverse_geocode(latlng) 
+      def self.do_reverse_geocode(latlng, opts = {}) 
         latlng=LatLng.normalize(latlng)
-        res = self.call_geocoder_service("http://maps.google.com/maps/api/geocode/json?sensor=false&latlng=#{Geokit::Inflector::url_escape(latlng.ll)}")
+        opts[:language] ||= "en"
+        res = self.call_geocoder_service("http://maps.google.com/maps/api/geocode/json?sensor=false&latlng=#{Geokit::Inflector::url_escape(latlng.ll)}&language=#{opts[:language]}")
         return GeoLoc.new unless (res.is_a?(Net::HTTPSuccess) || res.is_a?(Net::HTTPOK))
         json = res.body
         logger.debug "Google reverse-geocoding. LL: #{latlng}. Result: #{json}"
@@ -689,7 +691,7 @@ module Geokit
 
        private 
        # Template method which does the reverse-geocode lookup.
-       def self.do_reverse_geocode(latlng) 
+       def self.do_reverse_geocode(latlng, opts = {}) 
          latlng=LatLng.normalize(latlng)
          res = self.call_geocoder_service("http://data.fcc.gov/api/block/find?format=json&latitude=#{Geokit::Inflector::url_escape(latlng.lat.to_s)}&longitude=#{Geokit::Inflector::url_escape(latlng.lng.to_s)}")
          return GeoLoc.new unless (res.is_a?(Net::HTTPSuccess) || res.is_a?(Net::HTTPOK))
@@ -887,7 +889,7 @@ module Geokit
       # This method will call one or more geocoders in the order specified in the 
       # configuration until one of the geocoders work, only this time it's going
       # to try to reverse geocode a geographical point.
-      def self.do_reverse_geocode(latlng)
+      def self.do_reverse_geocode(latlng, opts = {})
         Geokit::Geocoders::provider_order.each do |provider|
           begin
             klass = Geokit::Geocoders.const_get "#{Geokit::Inflector::camelize(provider.to_s)}Geocoder"

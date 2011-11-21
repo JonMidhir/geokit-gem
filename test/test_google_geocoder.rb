@@ -167,10 +167,10 @@ class GoogleGeocoderTest < BaseGeocoderTest #:nodoc: all
     madrid.lat, madrid.lng = "40.4167413", "-3.7032498"
     response = MockSuccess.new
     response.expects(:body).returns(GOOGLE_REVERSE_MADRID)
-    url = "http://maps.google.com/maps/geo?ll=#{Geokit::Inflector::url_escape(madrid.ll)}&output=xml&key=#{Geokit::Geocoders::google}&oe=utf-8"
+    url = "http://maps.google.com/maps/geo?ll=#{Geokit::Inflector::url_escape(madrid.ll)}&output=xml&key=#{Geokit::Geocoders::google}&oe=utf-8&hl=en-GB"
     Geokit::Geocoders::GoogleGeocoder.expects(:call_geocoder_service).with(url).
       returns(response)
-    res=Geokit::Geocoders::GoogleGeocoder.do_reverse_geocode(madrid.ll)
+    res=Geokit::Geocoders::GoogleGeocoder.do_reverse_geocode(madrid.ll, :language => 'en-GB')
 
     assert_equal madrid.lat.to_s.slice(1..5), res.lat.to_s.slice(1..5)
     assert_equal madrid.lng.to_s.slice(1..5), res.lng.to_s.slice(1..5)
