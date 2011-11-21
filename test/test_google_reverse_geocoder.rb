@@ -41,7 +41,8 @@ class GoogleReverseGeocoderTest < BaseGeocoderTest #:nodoc: all
     assert_equal "45127", res.zip
     assert_equal "51.4578329,7.0166848", res.ll # slightly dif from yahoo
     assert res.is_us? == false
-    assert_equal "Porscheplatz 1, 45127 Essen, Deutschland", res.full_address #slightly different from yahoo
+    assert_equal "Germany", res.country
+    assert_equal "Porscheplatz 1, 45127 Essen, Germany", res.full_address #slightly different from yahoo
     assert_equal "google", res.provider
   end
   
